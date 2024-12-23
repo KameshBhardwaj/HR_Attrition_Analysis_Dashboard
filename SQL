@@ -1,0 +1,176 @@
+CREATE DATABASE HRAnalytics;
+USE HRAnalytics;
+SELECT * FROM employee_attrition;
+
+-- 1. Attrition Rate Overview
+SELECT 
+    (SUM(CASE WHEN Attrition = 'Yes' THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS AttritionRate
+FROM employee_attrition;
+
+-- 2. Attrition by Department
+
+SELECT 
+    Department,
+    (SUM(CASE WHEN Attrition = 'Yes' THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS AttritionRate
+FROM employee_attrition
+GROUP BY Department;
+
+-- 3. Attrition by Job Role
+
+SELECT 
+    JobRole,
+    (SUM(CASE WHEN Attrition = 'Yes' THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS AttritionRate
+FROM employee_attrition
+GROUP BY JobRole
+ORDER BY AttritionRate DESC;
+
+-- 4. Attrition by Age Group
+
+SELECT 
+    CASE
+        WHEN Age BETWEEN 18 AND 25 THEN '18-25'
+        WHEN Age BETWEEN 26 AND 35 THEN '26-35'
+        WHEN Age BETWEEN 36 AND 45 THEN '36-45'
+        WHEN Age BETWEEN 46 AND 55 THEN '46-55'
+        ELSE '56+'
+    END AS AgeGroup,
+    (SUM(CASE WHEN Attrition = 'Yes' THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS AttritionRate
+FROM employee_attrition
+GROUP BY AgeGroup
+ORDER BY AttritionRate DESC;
+
+-- 5. Attrition by Marital Status
+
+SELECT 
+    MaritalStatus,
+    (SUM(CASE
+        WHEN Attrition = 'Yes' THEN 1
+        ELSE 0
+    END) / COUNT(*)) * 100 AS AttritionRate
+FROM
+    employee_attrition
+GROUP BY MaritalStatus;
+
+-- 6. Attrition by Years at Company
+
+SELECT 
+    YearsAtCompany,
+    (SUM(CASE WHEN Attrition = 'Yes' THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS AttritionRate
+FROM employee_attrition
+GROUP BY YearsAtCompany
+ORDER BY AttritionRate DESC;
+
+-- 7. Monthly Income vs Attrition
+
+SELECT 
+    CASE
+        WHEN MonthlyIncome BETWEEN 10000 AND 40000 THEN '10K-40K'
+        WHEN MonthlyIncome BETWEEN 40001 AND 80000 THEN '40K-80K'
+        WHEN MonthlyIncome BETWEEN 80001 AND 120000 THEN '80K-120K'
+        WHEN MonthlyIncome BETWEEN 120001 AND 160000 THEN '120K-160K'
+        WHEN MonthlyIncome BETWEEN 160001 AND 200000 THEN '160K-200K'
+        ELSE 'Unknown'
+    END AS IncomeRange,
+    COUNT(*) AS TotalEmployees,
+    SUM(CASE WHEN Attrition = 'Yes' THEN 1 ELSE 0 END) AS AttritionCount,
+    (SUM(CASE WHEN Attrition = 'Yes' THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS AttritionRate
+FROM employee_attrition
+GROUP BY IncomeRange
+ORDER BY AttritionRate DESC;
+
+-- 8. Attrition Based on Job Satisfaction and Environment Satisfaction
+
+-- Job Satisfaction:
+SELECT 
+    JobSatisfaction,
+    (SUM(CASE WHEN Attrition = 'Yes' THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS AttritionRate
+FROM employee_attrition
+GROUP BY JobSatisfaction
+ORDER BY AttritionRate DESC;
+
+-- Environment Satisfaction
+SELECT 
+    EnvironmentSatisfaction,
+    (SUM(CASE
+        WHEN Attrition = 'Yes' THEN 1
+        ELSE 0
+    END) / COUNT(*)) * 100 AS AttritionRate
+FROM
+    employee_attrition
+GROUP BY EnvironmentSatisfaction
+ORDER BY AttritionRate DESC;
+
+-- Attrition vs Training Time (TrainingTimesLastYear)
+
+SELECT 
+    TrainingTimesLastYear,
+    (SUM(CASE
+        WHEN Attrition = 'Yes' THEN 1
+        ELSE 0
+    END) / COUNT(*)) * 100 AS AttritionRate
+FROM
+    employee_attrition
+GROUP BY TrainingTimesLastYear
+ORDER BY AttritionRate DESC;
+
+-- Years at Company
+
+SELECT 
+    CASE
+        WHEN YearsAtCompany BETWEEN 0 AND 10 THEN '0-10 years'
+        WHEN YearsAtCompany BETWEEN 11 AND 20 THEN '11-20 years'
+        WHEN YearsAtCompany BETWEEN 21 AND 30 THEN '21-30 years'
+        WHEN YearsAtCompany BETWEEN 31 AND 40 THEN '31-40 years'
+        ELSE '40+ years'
+    END AS YearsWorked,
+    COUNT(*) AS TotalEmployees,
+    SUM(CASE
+        WHEN Attrition = 'Yes' THEN 1
+        ELSE 0
+    END) AS AttritionCount,
+    (SUM(CASE
+        WHEN Attrition = 'Yes' THEN 1
+        ELSE 0
+    END) / COUNT(*)) * 100 AS AttritionRate
+FROM
+    employee_attrition
+GROUP BY YearsWorked
+ORDER BY AttritionRate DESC;
+
+-- Overall Statistics Summary
+
+SELECT 
+    AVG(MonthlyIncome) AS AvgMonthlyIncome,
+    AVG(YearsAtCompany) AS AvgYearsAtCompany,
+    AVG(NumCompaniesWorked) AS AvgNumCompaniesWorked,
+    AVG(TotalWorkingYears) AS AvgTotalWorkingYears
+FROM employee_attrition;
+
+-- Attrition Based On YearsSinceLastPromotion
+
+SELECT 
+    YearsSinceLastPromotion,
+    (SUM(CASE WHEN Attrition = 'Yes' THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS AttritionRate
+FROM employee_attrition
+GROUP BY YearsSinceLastPromotion
+ORDER BY AttritionRate DESC;
+
+-- Identifying High-Risk Employees
+
+SELECT 
+    EmployeeID,
+    JobRole,
+    JobSatisfaction,
+    EnvironmentSatisfaction,
+    YearsAtCompany,
+    MonthlyIncome
+FROM employee_attrition
+WHERE Attrition = 'Yes' AND (JobSatisfaction < 3 OR EnvironmentSatisfaction < 3 OR YearsAtCompany < 2);
+
+-- Employee Retention Rate by Stock Options
+
+SELECT 
+    StockOptionLevel,
+    (SUM(CASE WHEN Attrition = 'Yes' THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS AttritionRate
+FROM employee_attrition
+GROUP BY StockOptionLevel;
